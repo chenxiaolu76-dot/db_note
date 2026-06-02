@@ -18,3 +18,5 @@ mkdocs build --strict
 ## 在线部署
 
 推送到 `main` 分支后，GitHub Actions 会自动构建并发布到 GitHub Pages。
+
+> Deployment trigger updated.
