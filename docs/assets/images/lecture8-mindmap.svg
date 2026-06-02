@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2200" height="1500" viewBox="0 0 2200 1500">
+  <style>
+    .title { font: 700 32px "Microsoft YaHei", "PingFang SC", sans-serif; fill: #0f172a; }
+    .label { font: 700 20px "Microsoft YaHei", "PingFang SC", sans-serif; fill: #0f172a; }
+    .text { font: 15px "Microsoft YaHei", "PingFang SC", sans-serif; fill: #1f2937; }
+    .small { font: 14px "Microsoft YaHei", "PingFang SC", sans-serif; fill: #334155; }
+    .center { fill: #0f766e; stroke: #0b5f58; stroke-width: 3; }
+    .b1 { fill: #dbeafe; stroke: #60a5fa; }
+    .b2 { fill: #dcfce7; stroke: #4ade80; }
+    .b3 { fill: #fef3c7; stroke: #f59e0b; }
+    .b4 { fill: #fee2e2; stroke: #f87171; }
+    .b5 { fill: #ede9fe; stroke: #8b5cf6; }
+    .b6 { fill: #fae8ff; stroke: #d946ef; }
+    .b7 { fill: #e0f2fe; stroke: #06b6d4; }
+    .b8 { fill: #ecfccb; stroke: #84cc16; }
+    .b9 { fill: #ffe4e6; stroke: #fb7185; }
+    .box { rx: 20; ry: 20; stroke-width: 2.3; }
+    .leaf { rx: 14; ry: 14; fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.6; }
+    .line1 { stroke: #60a5fa; }
+    .line2 { stroke: #4ade80; }
+    .line3 { stroke: #f59e0b; }
+    .line4 { stroke: #f87171; }
+    .line5 { stroke: #8b5cf6; }
+    .line6 { stroke: #d946ef; }
+    .line7 { stroke: #06b6d4; }
+    .line8 { stroke: #84cc16; }
+    .line9 { stroke: #fb7185; }
+    .line { fill: none; stroke-width: 3.2; stroke-linecap: round; }
+  </style>
+
+  <rect x="0" y="0" width="2200" height="1500" fill="#f8fafc"/>
+
+  <rect x="900" y="640" width="400" height="170" rx="28" ry="28" class="center"/>
+  <text x="1100" y="705" text-anchor="middle" class="title" fill="#ffffff">第 8 讲</text>
+  <text x="1100" y="750" text-anchor="middle" class="title" fill="#ffffff">查询处理（Query Processing）</text>
+
+  <path d="M900 700 C790 700, 720 180, 610 180" class="line line1"/>
+  <path d="M900 700 C770 700, 700 410, 560 410" class="line line2"/>
+  <path d="M900 700 C760 700, 700 700, 540 700" class="line line3"/>
+  <path d="M900 725 C770 725, 710 1030, 570 1030" class="line line4"/>
+  <path d="M900 740 C790 740, 730 1290, 620 1290" class="line line5"/>
+  <path d="M1300 700 C1410 700, 1480 180, 1590 180" class="line line6"/>
+  <path d="M1300 700 C1440 700, 1500 500, 1660 500" class="line line7"/>
+  <path d="M1300 720 C1450 720, 1510 930, 1680 930" class="line line8"/>
+  <path d="M1300 745 C1430 745, 1490 1260, 1620 1260" class="line line9"/>
+
+  <rect x="180" y="70" width="430" height="220" class="box b1"/>
+  <text x="395" y="110" text-anchor="middle" class="label">总体架构</text>
+  <text x="205" y="150" class="text">• SQL Parser / Binder / Rewriter</text>
+  <text x="205" y="182" class="text">• Optimizer / Cost Model</text>
+  <text x="205" y="214" class="text">• Execution Engine / Storage Manager</text>
+  <text x="205" y="246" class="text">• Query Plan / Operator / Task / Worker</text>
+  <text x="205" y="278" class="text">• 主线：SQL → 计划 → 算法 → 结果</text>
+
+  <rect x="120" y="300" width="440" height="250" class="box b2"/>
+  <text x="340" y="340" text-anchor="middle" class="label">进程模型与调度</text>
+  <text x="145" y="380" class="text">• Process per Worker</text>
+  <text x="145" y="412" class="text">• Process Pool</text>
+  <text x="145" y="444" class="text">• Thread per Worker</text>
+  <text x="145" y="476" class="text">• Scheduling：where / when / how / how many</text>
+  <text x="145" y="508" class="text">• 执行优化：减少指令、降周期、并行化</text>
+
+  <rect x="90" y="590" width="450" height="270" class="box b3"/>
+  <text x="315" y="630" text-anchor="middle" class="label">处理模型</text>
+  <text x="115" y="670" class="text">• Iterator：next() / pull / tuple pipeline</text>
+  <text x="115" y="702" class="text">• Materialization：一次性输出完整结果</text>
+  <text x="115" y="734" class="text">• Vectorized：batch / SIMD / 更偏 OLAP</text>
+  <text x="115" y="766" class="text">• Top-to-Bottom vs Bottom-to-Top</text>
+  <text x="115" y="798" class="text">• 阻塞算子：Sort / Join / Subquery / Order By</text>
+  <text x="115" y="830" class="text">• 关键比较：调用开销、缓存友好性、吞吐</text>
+
+  <rect x="130" y="920" width="440" height="250" class="box b4"/>
+  <text x="350" y="960" text-anchor="middle" class="label">访问方法与代价</text>
+  <text x="155" y="1000" class="text">• Cost：block transfers + seeks</text>
+  <text x="155" y="1032" class="text">• Sequential Scan / Index Scan / Bitmap Scan</text>
+  <text x="155" y="1064" class="text">• Sequential Scan 优化：Prefetch / Bypass / Parallel</text>
+  <text x="155" y="1096" class="text">• Zone Maps / Late Materialization</text>
+  <text x="155" y="1128" class="text">• 核心：扫描代价 vs 索引代价</text>
+
+  <rect x="200" y="1190" width="420" height="220" class="box b5"/>
+  <text x="410" y="1230" text-anchor="middle" class="label">排序</text>
+  <text x="225" y="1270" class="text">• ORDER BY / DISTINCT / GROUP BY / B+Tree bulk loading</text>
+  <text x="225" y="1302" class="text">• In-memory sort</text>
+  <text x="225" y="1334" class="text">• External Merge Sort：Run Generation + Merge</text>
+  <text x="225" y="1366" class="text">• run / pass 数 / B-1 路归并 / I/O 成本</text>
+
+  <rect x="1590" y="60" width="430" height="240" class="box b6"/>
+  <text x="1805" y="100" text-anchor="middle" class="label">连接总览</text>
+  <text x="1615" y="140" class="text">• 分析对象：binary join / inner equijoin</text>
+  <text x="1615" y="172" class="text">• 输出：Early Materialization / Late Materialization</text>
+  <text x="1615" y="204" class="text">• 代价符号：R(M,m), S(N,n)</text>
+  <text x="1615" y="236" class="text">• 原则：小表做 outer，优先看 pages</text>
+  <text x="1615" y="268" class="text">• 比较指标：主要看 I/O</text>
+
+  <rect x="1570" y="360" width="500" height="320" class="box b7"/>
+  <text x="1820" y="400" text-anchor="middle" class="label">连接算法</text>
+  <text x="1595" y="440" class="text">• Simple Nested Loop：M + mN</text>
+  <text x="1595" y="472" class="text">• Block Nested Loop：M + MN</text>
+  <text x="1595" y="504" class="text">• Buffered BNLJ：M + ⌈M/(B-2)⌉N</text>
+  <text x="1595" y="536" class="text">• Index Nested Loop：M + mC</text>
+  <text x="1595" y="568" class="text">• Sort-Merge Join：SortCost(R)+SortCost(S)+M+N</text>
+  <text x="1595" y="600" class="text">• Hash Join：Build / Probe / Bloom Filter</text>
+  <text x="1595" y="632" class="text">• Grace Hash Join：3(M+N)</text>
+  <text x="1595" y="664" class="text">• 选择标准：索引、有序性、内存、选择率</text>
+
+  <rect x="1600" y="780" width="480" height="290" class="box b8"/>
+  <text x="1840" y="820" text-anchor="middle" class="label">其他操作</text>
+  <text x="1625" y="860" class="text">• Duplicate Elimination：sorting / hashing</text>
+  <text x="1625" y="892" class="text">• Projection：先投影，再去重</text>
+  <text x="1625" y="924" class="text">• Aggregation：sorting / hashing / partial aggregation</text>
+  <text x="1625" y="956" class="text">• Set Operations：union / intersection / difference</text>
+  <text x="1625" y="988" class="text">• Keyword Queries：inverted index</text>
+  <text x="1625" y="1020" class="text">• Outer Join：null-padded tuples</text>
+  <text x="1625" y="1052" class="text">• 本质：很多都复用排序或哈希思想</text>
+
+  <rect x="1570" y="1150" width="430" height="230" class="box b9"/>
+  <text x="1785" y="1190" text-anchor="middle" class="label">考试抓手</text>
+  <text x="1595" y="1230" class="text">• 主线：Parser → Optimizer → Execution Engine</text>
+  <text x="1595" y="1262" class="text">• 三模型：Iterator / Materialization / Vectorized</text>
+  <text x="1595" y="1294" class="text">• 三扫描：Sequential / Index / Bitmap</text>
+  <text x="1595" y="1326" class="text">• 三连接：Nested Loop / Sort-Merge / Hash</text>
+  <text x="1595" y="1358" class="text">• 核心意识：有序性、索引、内存、I/O、CPU</text>
+
+  <rect x="780" y="90" width="410" height="150" class="leaf"/>
+  <text x="985" y="130" text-anchor="middle" class="label">本讲核心问题</text>
+  <text x="810" y="170" class="small">SQL 怎样变成操作符树？</text>
+  <text x="810" y="198" class="small">操作符之间如何传数据？</text>
+  <text x="810" y="226" class="small">为什么优化器会选某个计划？</text>
+
+  <rect x="820" y="1220" width="520" height="170" class="leaf"/>
+  <text x="1080" y="1260" text-anchor="middle" class="label">一句话总括</text>
+  <text x="850" y="1300" class="small">查询处理不是背算法名字，而是理解：</text>
+  <text x="850" y="1328" class="small">有序性、索引、内存、I/O、CPU 如何共同决定执行计划。</text>
+  <text x="850" y="1356" class="small">真正要比较的是“代价”和“适用条件”，不是谁永远最好。</text>
+</svg>
