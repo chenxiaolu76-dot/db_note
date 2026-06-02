@@ -1,8 +1,8 @@
 site_name: 数据库笔记
 site_description: 数据库课程笔记与课件整理
-site_url: "https://chenxiaolu76-dot.github.io/db-notes/"
-repo_url: "https://github.com/chenxiaolu76-dot/db-notes"
-repo_name: "chenxiaolu76-dot/db-notes"
+site_url: "https://chenxiaolu76-dot.github.io/db_note/"
+repo_url: "https://github.com/chenxiaolu76-dot/db_note"
+repo_name: "chenxiaolu76-dot/db_note"
 docs_dir: docs
 site_dir: site
 use_directory_urls: true
