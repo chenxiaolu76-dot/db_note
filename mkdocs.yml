@@ -61,4 +61,5 @@ nav:
       - Lecture 6 · Tree Indices: notes/lecture6-tree-indices.md
       - Lecture 8 · Query Processing: notes/lecture8-query-processing.md
       - Lecture 8 · 思维导图: notes/lecture8-mindmap.md
+      - Lecture 9 · Query Optimization: notes/lecture9-query-optimization.md
   - 新增笔记模板: notes/_template.md
