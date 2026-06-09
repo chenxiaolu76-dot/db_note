@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1650" viewBox="0 0 2400 1650">
+  <style>
+    .title { font: 700 34px "Microsoft YaHei", "PingFang SC", sans-serif; fill: #0f172a; }
+    .label { font: 700 20px "Microsoft YaHei", "PingFang SC", sans-serif; fill: #0f172a; }
+    .text { font: 15px "Microsoft YaHei", "PingFang SC", sans-serif; fill: #1f2937; }
+    .small { font: 14px "Microsoft YaHei", "PingFang SC", sans-serif; fill: #334155; }
+    .center { fill: #0f766e; stroke: #0b5f58; stroke-width: 3; }
+    .b1 { fill: #dbeafe; stroke: #60a5fa; }
+    .b2 { fill: #dcfce7; stroke: #4ade80; }
+    .b3 { fill: #fef3c7; stroke: #f59e0b; }
+    .b4 { fill: #fee2e2; stroke: #f87171; }
+    .b5 { fill: #ede9fe; stroke: #8b5cf6; }
+    .b6 { fill: #fae8ff; stroke: #d946ef; }
+    .b7 { fill: #e0f2fe; stroke: #06b6d4; }
+    .b8 { fill: #ecfccb; stroke: #84cc16; }
+    .b9 { fill: #ffe4e6; stroke: #fb7185; }
+    .box { rx: 20; ry: 20; stroke-width: 2.3; }
+    .leaf { rx: 14; ry: 14; fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.6; }
+    .line1 { stroke: #60a5fa; }
+    .line2 { stroke: #4ade80; }
+    .line3 { stroke: #f59e0b; }
+    .line4 { stroke: #f87171; }
+    .line5 { stroke: #8b5cf6; }
+    .line6 { stroke: #d946ef; }
+    .line7 { stroke: #06b6d4; }
+    .line8 { stroke: #84cc16; }
+    .line9 { stroke: #fb7185; }
+    .line { fill: none; stroke-width: 3.2; stroke-linecap: round; }
+  </style>
+
+  <rect x="0" y="0" width="2400" height="1650" fill="#f8fafc"/>
+
+  <rect x="1000" y="710" width="420" height="180" rx="28" ry="28" class="center"/>
+  <text x="1210" y="780" text-anchor="middle" class="title" fill="#ffffff">Lecture 11</text>
+  <text x="1210" y="830" text-anchor="middle" class="title" fill="#ffffff">Concurrency Control</text>
+
+  <path d="M1000 780 C860 780, 770 170, 620 170" class="line line1"/>
+  <path d="M1000 780 C840 780, 740 430, 560 430" class="line line2"/>
+  <path d="M1000 780 C830 780, 730 760, 520 760" class="line line3"/>
+  <path d="M1000 805 C850 805, 760 1110, 560 1110" class="line line4"/>
+  <path d="M1000 830 C860 830, 780 1430, 620 1430" class="line line5"/>
+  <path d="M1420 780 C1560 780, 1650 170, 1820 170" class="line line6"/>
+  <path d="M1420 780 C1590 780, 1690 470, 1880 470" class="line line7"/>
+  <path d="M1420 800 C1600 800, 1710 1030, 1910 1030" class="line line8"/>
+  <path d="M1420 825 C1570 825, 1660 1390, 1830 1390" class="line line9"/>
+
+  <rect x="160" y="60" width="460" height="220" class="box b1"/>
+  <text x="390" y="100" text-anchor="middle" class="label">总体目标</text>
+  <text x="185" y="140" class="text">• 并发执行要像串行一样正确</text>
+  <text x="185" y="172" class="text">• 目标：serializable / recoverable / cascadeless</text>
+  <text x="185" y="204" class="text">• 串行安全但并发度差</text>
+  <text x="185" y="236" class="text">• 并发控制要在正确性与性能之间平衡</text>
+
+  <rect x="110" y="300" width="450" height="270" class="box b2"/>
+  <text x="335" y="340" text-anchor="middle" class="label">基于锁的协议</text>
+  <text x="135" y="380" class="text">• S 锁 / X 锁</text>
+  <text x="135" y="412" class="text">• 兼容性：S/S 兼容，其余冲突</text>
+  <text x="135" y="444" class="text">• Concurrency-Control Manager / Lock Table</text>
+  <text x="135" y="476" class="text">• 自动加锁：read 前拿 S，write 前拿 X</text>
+  <text x="135" y="508" class="text">• 现实中用户通常不手写 lock 指令</text>
+  <text x="135" y="540" class="text">• 关键目标：在冲突发生前先控制访问</text>
+
+  <rect x="70" y="620" width="450" height="310" class="box b3"/>
+  <text x="295" y="660" text-anchor="middle" class="label">2PL 与死锁</text>
+  <text x="95" y="700" class="text">• Growing：加锁不放锁</text>
+  <text x="95" y="732" class="text">• Shrinking：放锁不再加锁</text>
+  <text x="95" y="764" class="text">• 保证 conflict serializability</text>
+  <text x="95" y="796" class="text">• Strict 2PL：X 锁持有到提交</text>
+  <text x="95" y="828" class="text">• Rigorous 2PL：所有锁持有到提交</text>
+  <text x="95" y="860" class="text">• 基本 2PL 仍可能 deadlock / cascading abort</text>
+  <text x="95" y="892" class="text">• 死锁处理：detection / prevention / timeout / recovery</text>
+
+  <rect x="100" y="980" width="460" height="280" class="box b4"/>
+  <text x="330" y="1020" text-anchor="middle" class="label">多粒度与范围问题</text>
+  <text x="125" y="1060" class="text">• database / file / record 多粒度加锁</text>
+  <text x="125" y="1092" class="text">• IS / IX / SIX 意向锁</text>
+  <text x="125" y="1124" class="text">• insert / delete 需要 X 锁</text>
+  <text x="125" y="1156" class="text">• predicate read 导致 phantom</text>
+  <text x="125" y="1188" class="text">• predicate locking 理论强但开销大</text>
+  <text x="125" y="1220" class="text">• next-key locking 用于范围保护</text>
+
+  <rect x="170" y="1330" width="450" height="240" class="box b5"/>
+  <text x="395" y="1370" text-anchor="middle" class="label">索引并发</text>
+  <text x="195" y="1410" class="text">• index locking：锁 leaf nodes</text>
+  <text x="195" y="1442" class="text">• Locks vs Latches</text>
+  <text x="195" y="1474" class="text">• latch crabbing / latch coupling</text>
+  <text x="195" y="1506" class="text">• safe node：不会 split / merge</text>
+  <text x="195" y="1538" class="text">• optimistic lock coupling 提升并发</text>
+
+  <rect x="1820" y="60" width="470" height="250" class="box b6"/>
+  <text x="2055" y="100" text-anchor="middle" class="label">时间戳协议</text>
+  <text x="1845" y="140" class="text">• 每个事务开始时分配唯一 TS</text>
+  <text x="1845" y="172" class="text">• timestamp order = serializability order</text>
+  <text x="1845" y="204" class="text">• Basic TSO：R-TS / W-TS</text>
+  <text x="1845" y="236" class="text">• 读写不符合时间戳顺序则 abort</text>
+  <text x="1845" y="268" class="text">• serializable / deadlock-free</text>
+  <text x="1845" y="300" class="text">• 但 not recoverable / not cascadeless</text>
+
+  <rect x="1820" y="360" width="500" height="260" class="box b7"/>
+  <text x="2070" y="400" text-anchor="middle" class="label">TSO 扩展与 OCC</text>
+  <text x="1845" y="440" class="text">• Thomas’ Write Rule：过时写可忽略</text>
+  <text x="1845" y="472" class="text">• OCC：假设大多数事务不冲突</text>
+  <text x="1845" y="504" class="text">• Read Phase / Validation Phase / Write Phase</text>
+  <text x="1845" y="536" class="text">• private workspace / read set / write set</text>
+  <text x="1845" y="568" class="text">• 用 ValidationTS 确定串行化顺序</text>
+  <text x="1845" y="600" class="text">• 冲突则 abort + restart</text>
+
+  <rect x="1840" y="900" width="490" height="310" class="box b8"/>
+  <text x="2085" y="940" text-anchor="middle" class="label">MVCC 与 SI</text>
+  <text x="1865" y="980" class="text">• MVCC：保留旧版本，reads never wait</text>
+  <text x="1865" y="1012" class="text">• Multi-version TSO：按版本时间戳读历史</text>
+  <text x="1865" y="1044" class="text">• MV 2PL：更新用锁，只读事务不加锁</text>
+  <text x="1865" y="1076" class="text">• 代价：更多存储、GC、索引更复杂</text>
+  <text x="1865" y="1108" class="text">• Snapshot Isolation：读启动时快照</text>
+  <text x="1865" y="1140" class="text">• first-committer-wins / first-updater-wins</text>
+  <text x="1865" y="1172" class="text">• 避免脏读和不可重复读，但不等于 serializable</text>
+
+  <rect x="1820" y="1300" width="470" height="250" class="box b9"/>
+  <text x="2055" y="1340" text-anchor="middle" class="label">考试抓手</text>
+  <text x="1845" y="1380" class="text">• 锁协议：2PL / strict 2PL / rigorous 2PL</text>
+  <text x="1845" y="1412" class="text">• 死锁：graph / wait-die / wound-wait / victim</text>
+  <text x="1845" y="1444" class="text">• 范围问题：phantom / predicate / next-key</text>
+  <text x="1845" y="1476" class="text">• 非锁协议：TSO / OCC / MVCC / SI</text>
+  <text x="1845" y="1508" class="text">• 关键意识：正确性、等待、回滚、并发度</text>
+
+  <rect x="860" y="80" width="700" height="170" class="leaf"/>
+  <text x="1210" y="125" text-anchor="middle" class="label">Lecture 11 的一条主线</text>
+  <text x="890" y="165" class="small">事务并发时，数据库必须在“串行化正确性”和“系统吞吐量”之间找平衡。</text>
+  <text x="890" y="195" class="small">不同协议的本质差异，是它们把代价放在了等待、回滚、空间还是复杂度上。</text>
+  <text x="890" y="225" class="small">所以这章不是背名词，而是比较 trade-off。</text>
+
+  <rect x="860" y="1380" width="760" height="180" class="leaf"/>
+  <text x="1240" y="1425" text-anchor="middle" class="label">一句话总括</text>
+  <text x="890" y="1465" class="small">Locking 用等待换正确性，TSO/OCC 用回滚换等待，MVCC/SI 用版本换读性能。</text>
+  <text x="890" y="1495" class="small">真正的系统设计，不是选“最强协议”，而是选最适合负载与代价模型的协议组合。</text>
+  <text x="890" y="1525" class="small">这就是并发控制的核心逻辑。</text>
+</svg>
