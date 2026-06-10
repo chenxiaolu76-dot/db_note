@@ -1,593 +1,458 @@
 # Lecture 11 并发控制详细思维导图
 
-下面这张图用于快速总览；真正复习时，请直接看图后面的“详细版层级导图”。Lecture 11 的内容非常容易碎片化，所以这份导图刻意按“目标 → 锁协议 → 死锁 → 多粒度 → 索引并发 → 时间戳 → OCC → MVCC/SI”的顺序展开。
+这版思维导图按你给的图片重构，主线严格按下面五大块展开：
+
+1. 并发控制基础
+2. 基于锁的并发控制（Lock-based CC）
+3. 基于时间戳的并发控制（TSO）
+4. 乐观并发控制（OCC / 验证型 CC）
+5. 多版本并发控制（MVCC）
+
+上面的图负责快速总览，下面的层级稿负责考试复习和后续继续画 XMind。
 
 ![Lecture 11 Concurrency Control 思维导图](../assets/images/lecture11-mindmap.svg)
 
-## 一、总主线
+## 一、并发控制基础
 
-- Concurrency Control（并发控制）
-  - 核心问题
-    - 多事务并发执行时，如何仍然保持正确性
-    - 如何让事务“看起来像串行执行”
-    - 如何在正确性和性能之间取得平衡
+- 并发控制基础
   - 核心目标
-    - serializable
-    - recoverable
-    - preferably cascadeless
-  - 核心矛盾
-    - 串行执行最安全，但并发性能差
-    - 并发执行性能高，但会产生冲突、异常、死锁
+    - 可串行化
+      - 结果等价于某一串行执行
+    - 可恢复性
+      - 事务失败后能够正确回滚
+    - 无级联回滚
+      - 一个事务失败不要连累其他事务一起回滚
+  - 串行执行的缺陷
+    - 资源利用率极低
+    - 并发度为 0
+    - 吞吐量差
+  - 两大方案分类
+    - 悲观并发控制
+      - 先加锁后访问
+      - 典型代表：2PL 系列
+    - 乐观并发控制
+      - 先执行后验证
+      - 图里把 TSO、OCC、MVCC 都放到这条主线上
+      - 更准确地说：
+        - TSO 是时间顺序控制
+        - OCC 是典型乐观控制
+        - MVCC 是多版本控制
 
-## 二、并发控制的整体框架
+## 二、基于锁的并发控制（Lock-based CC）
 
-- 为什么需要并发控制
-  - 多事务并发能提升吞吐量
-  - 可以提高 CPU / I/O 利用率
-  - 但并发会带来读写冲突
+### 1. 锁的基础机制
 
-- 两大思路
+- 锁的基础机制
+  - 锁管理器（LM）
+    - 事务访问数据前必须向 LM 申请锁
+    - 获准后才能访问
+    - 完成后释放锁
+  - 两种模式
+    - 排他锁（X）
+      - 可读可写
+      - 与所有锁不兼容
+    - 共享锁（S）
+      - 只可读
+      - 仅与 S 锁兼容
+
+### 2. 两阶段锁协议（2PL）
+
+- 两阶段锁协议（2PL）
+  - 核心规则
+    - 增长阶段
+      - 只能申请锁，不能释放
+    - 收缩阶段
+      - 只能释放锁，不能申请
+  - 性质
+    - 保证冲突可串行化
+    - 串行化顺序由锁点（lock point）决定
+  - 固有缺陷
+    - 级联回滚
+      - 提前释放 X 锁可能导致脏读
+    - 死锁
+      - 循环等待对方持有的锁
+    - 饥饿
+      - 事务长期无法获得锁
+  - 工业界扩展
+    - 严格 2PL
+      - 所有 X 锁持有到提交 / 中止
+      - 避免级联回滚
+      - 保证可恢复性
+    - 强严格 2PL / Rigorous 2PL
+      - 所有锁（S+X）持有到提交 / 中止
+      - 串行化顺序可近似视为提交顺序
+      - 商业数据库里常把它也简称为 2PL
+
+### 3. 锁转换与自动加锁
+
+- 锁转换与自动加锁
+  - 锁转换
+    - 增长阶段
+      - S → X：升级（upgrade）
+    - 收缩阶段
+      - X → S：降级（downgrade）
+  - 自动加锁
+    - 读自动加 S 锁
+    - 写自动加 X 锁
+    - 已持有 S 锁再写时，需要升级为 X 锁
+
+### 4. 锁管理器与锁表
+
+- 锁管理器与锁表
+  - 锁表记录
+    - 已授予锁
+    - 等待请求
+  - 锁管理器通常还会跟踪
+    - 每个事务持有的所有锁
+    - 方便统一释放、死锁检测、回滚恢复
+
+### 5. 图协议（树协议）
+
+- 图协议（树协议）
+  - 核心思想
+    - 强制按树的一种偏序加锁
+    - 打破循环等待
+  - 优点
+    - 无死锁
+    - 解锁可以更早
+    - 并发度更高
+  - 缺点
+    - 必须事先知道要访问的祖先节点
+    - 不保证可恢复性
+    - 有时要锁住并不会真正访问的节点
+  - 工业界
+    - 几乎不单独使用
+    - 更多作为索引并发控制思想的铺垫
+
+### 6. 死锁处理
+
+- 死锁处理
+  - 死锁检测
+    - waits-for graph
+    - 检测逻辑
+      - 周期性检查是否存在环
+  - 死锁预防（基于时间戳）
+    - Wait-Die
+      - 老等小
+      - 小等老时小事务回滚更多
+    - Wound-Wait
+      - 老杀小
+      - 小等老
+      - 回滚次数通常更少
+      - 工业界常见
+    - Timeout 方案
+      - 等待超时自动回滚
+      - 实现简单但易误杀
+  - 死锁恢复
+    - 选择受害者
+      - 回滚代价最小的事务
+    - 回滚方式
+      - 完全回滚
+      - 部分回滚（保存点）
+    - 防饥饿
+      - 永远不选最老事务作受害者
+      - 或引入回滚次数权重
+
+### 7. 多粒度锁
+
+- 多粒度锁
+  - 粒度权衡
+    - 细粒度（记录）
+      - 并发度高
+      - 锁开销大
+    - 粗粒度（数据库/表）
+      - 开销小
+      - 并发度低
+  - 意向锁
+    - IS
+      - 子节点将加 S 锁
+    - IX
+      - 子节点将加 X / S 锁
+    - SIX
+      - 本身加 S 锁，子节点加 X 锁
+  - 典型加锁示例
+    - 读单个元组
+      - 表级 IS + 元组级 S
+    - 更新单个元组
+      - 表级 IX + 元组级 X
+    - 扫描全表并更新
+      - 表级 SIX
+
+### 8. 插入 / 删除与幻读
+
+- 插入 / 删除与幻读
+  - 幻读本质
+    - 同一事务两次范围查询结果集数量不同
+    - 2PL 无法锁定“尚不存在的间隙”
+  - 解决方案演进
+    - 全表锁
+      - 并发度极低
+    - 谓词锁
+      - 锁定逻辑条件
+      - 开销极大
+      - 通用但难做
+    - Next-Key Lock
+      - 工业界标准
+      - 组成为：
+        - 记录锁 + 间隙锁
+      - 原理
+        - 锁定满足条件的记录
+        - 再锁下一个索引键值
+        - 从而锁住区间间隙
+      - 示例
+        - 查询 \(7 \le X \le 16\)
+        - 会锁住对应区间以及边界后的 next key
+      - 前提
+        - 必须走索引
+        - 否则退化成表锁
+
+### 9. 索引结构并发控制
+
+- 索引结构并发控制
+  - Latch vs Lock（核心区别）
+    - Lock（事务锁）
+      - 保护逻辑内容
+      - 持有周期：事务周期
+    - Latch（闩锁）
+      - 保护物理数据结构临界区
+      - 持有周期：操作周期（纳秒 / 微秒级）
+  - Latch Crabbing（锁耦合）协议
+    - 核心
+      - 先拿子节点锁，再释放父节点锁
+    - safe 节点定义
+      - 插入时不满
+      - 删除时超过半满
+    - 基本版流程
+      - 搜索
+        - 读 latch 向下遍历
+        - 拿到子节点后释放父节点
+      - 插入 / 删除
+        - 写 latch 向下遍历
+        - 子节点安全则释放所有祖先锁
+    - 乐观版（工业界标准）
+      - 先假设叶子节点安全
+      - 用读 latch 遍历
+      - 到达后再升级为写 latch
+      - 不安全则重试
+  - 经典示例
+    - 搜索 23
+      - A → C → F
+      - 逐层拿子放父
+    - 删除 44
+      - 直到确认 G 安全前，不释放 A / C
+    - 插入 40
+      - 若 G 会分裂，则继续保留上层必要 latch
+
+## 三、基于时间戳的并发控制（TSO）
+
+### 1. 核心思想
+
+- 基于时间戳的并发控制（TSO）
+  - 核心思想
+    - 事务启动时分配全局唯一递增时间戳
+    - 按时间戳顺序串行化
+
+### 2. 基本 TSO 规则
+
+- 基本 TSO 规则
+  - 每个数据项维护两个时间戳
+    - R-TS(Q)
+      - 最后成功读取 \(Q\) 的事务时间戳
+    - W-TS(Q)
+      - 最后成功写入 \(Q\) 的事务时间戳
+  - 读操作规则
+    - 若 \(TS(T_i) < W\text{-}TS(Q)\)
+      - 拒绝读，\(T_i\) 回滚
+    - 否则执行读，并更新
+      - \(R\text{-}TS(Q)=\max(R\text{-}TS(Q), TS(T_i))\)
+  - 写操作规则
+    - 若 \(TS(T_i) < R\text{-}TS(Q)\)
+      - 拒绝写，\(T_i\) 回滚
+    - 若 \(TS(T_i) < W\text{-}TS(Q)\)
+      - 拒绝写，\(T_i\) 回滚
+    - 否则允许写，并更新
+      - \(W\text{-}TS(Q)=TS(T_i)\)
+  - 经典示例
+    - \(T_1(TS=1)\) 读 A，\(T_2(TS=2)\) 写 A
+    - 若之后 \(T_1\) 想写 A，则会因过时而被拒绝
+
+### 3. Thomas 写规则（核心优化）
+
+- Thomas 写规则
+  - 适用场景
+    - \(TS(T_i) < W\text{-}TS(Q)\)
+  - 处理方式
+    - 不一定 abort
+    - 可以直接忽略这个“过时写”
+  - 原理
+    - 该写最终会被更新事务覆盖
+    - 不影响最终结果
+  - 代价
+    - 放松了严格时间戳顺序
+    - 但不破坏视图一致性
+
+### 4. TSO 缺陷与优化
+
+- TSO 缺陷与优化
+  - 缺陷
+    - 不保证可恢复性
+    - 不保证无级联回滚
+    - 长事务易饿死
+  - 优化方向
+    - 推迟写到事务末尾
+    - 有限加锁
+    - 提交依赖
+
+## 四、乐观并发控制（OCC / 验证型 CC）
+
+- 乐观并发控制
+  - 核心思想
+    - 假设冲突少，先在私有工作区执行，提交时验证冲突
+  - 三个执行阶段
+    - 读阶段
+      - 复制数据到私有工作区
+      - 跟踪读集 / 写集
+    - 验证阶段
+      - 提交时检查是否与其他事务冲突
+    - 写阶段
+      - 验证通过则写回全局数据库
+      - 否则回滚重启
+  - 验证规则（串行化顺序 = 验证时间顺序）
+    - 对事务 \(T_j\)
+      - 若 \(FinishTS(T_i) < StartTS(T_j)\)
+        - 不冲突
+      - 或若
+        - \(StartTS(T_j) < FinishTS(T_i) < ValidationTS(T_j)\)
+        - 且 \(WriteSet(T_i)\cap ReadSet(T_j)=\varnothing\)
+        - 也可通过验证
+  - 优缺点
+    - 优点
+      - 读写互不阻塞
+      - 无死锁
+      - 冲突少时性能极高
+    - 缺点
+      - 冲突多时回滚开销大
+      - 长事务易饿死
+
+## 五、多版本并发控制（MVCC）
+
+### 1. 核心思想
+
+- 多版本并发控制（MVCC）
+  - 核心思想
+    - 保留多个历史版本
+    - 写创建新版本
+    - 读读取对应时间点可见版本
+
+### 2. MV-TSO（多版本时间戳排序）
+
+- MV-TSO
+  - 每个版本包含
+    - Value
+    - W-TS
+    - R-TS
+  - 读操作
+    - 返回 \(W\text{-}TS \le TS(T_i)\) 的最新版本
+    - 更新对应版本的 R-TS
+  - 写操作
+    - 找到最新可见版本 \(Q_k\)
+    - 若 \(TS(T_i) < R\text{-}TS(Q_k)\)
+      - 拒绝写
+    - 若 \(TS(T_i)=W\text{-}TS(Q_k)\)
+      - 覆盖 \(Q_k\)
+    - 否则创建新版本 \(Q_{k+1}\)
+
+### 3. MV-2PL（多版本两阶段锁，工业界标准）
+
+- MV-2PL
+  - 更新事务
+    - 遵守 2PL
+    - 创建新版本
+    - 提交时分配全局时间戳
+  - 只读事务
+    - 启动时分配 TS
+    - 无锁读取对应历史版本
+
+### 4. 快照隔离（SI，MV-2PL 简化版）
+
+- 快照隔离（SI）
+  - 核心机制
+    - 事务开始时获取已提交数据的快照
+    - 读写都基于快照
+    - 自己的写对自己可见
+    - 并发事务更新彼此不可见
+  - 提交规则
+    - first-committer-wins
+      - 提交时检查写集合是否被其他事务修改
+  - PPT 示例
+    - \(T_1\) 写 \(Y=1\)
+    - \(T_2\) 读老快照继续执行
+    - \(T_3\) 又基于快照写 X/Z
+    - 某些事务最终因为不是 first committer 而回滚
+  - 优缺点
+    - 优点
+      - 读完全无锁
+      - 避免脏读 / 不可重复读 / 丢失更新
+      - 支持长事务
+    - 缺点
+      - 不保证可串行化
+      - 存在写偏斜等异常
+
+### 5. 写偏斜异常（Write Skew）
+
+- 写偏斜异常
+  - 本质
+    - 两个事务修改不同数据
+    - 但依赖同一约束
+    - 因为只检查快照中的旧状态，所以互相看不见对方写入
+  - 典型例子
+    - 值班约束
+    - 医院值班
+    - A、B 账户和约束
+  - 解决方案
+    - `SELECT ... FOR UPDATE`
+    - SERIALIZABLE / SSI
+    - 更强的锁或依赖跟踪
+
+### 6. 工业界实现
+
+- 工业界实现
+  - Oracle / PostgreSQL < 9.1
+    - 可串行化“实际上为 SI”
+  - PostgreSQL
+    - 支持 SSI
+    - 通过检测读写冲突，自动回滚
+  - MySQL InnoDB
+    - RR 隔离级别 + SI + Next-Key Lock
+    - 用范围锁解决幻读
+
+### 7. MVCC 实现挑战
+
+- MVCC 实现挑战
+  - 存储开销
+    - 需要保存多个历史版本
+  - 垃圾回收
+    - 清理不再被需要的旧版本
+  - 索引支持
+    - 多版本索引实现复杂
+  - 约束检查
+    - 主键 / 外键的多版本校验更难
+
+## 六、Lecture 11 最后总结
+
+- 这章最核心的不是背协议名字
+  - 而是理解每类协议在拿什么换什么
+
+- 可以用一句话概括：
   - Lock-based
-    - 先加锁，再访问
-    - 假设事务会冲突
-  - Timestamp-based
-    - 不显式加锁
-    - 用时间戳定义顺序
-
-- 进一步扩展
-  - OCC（Optimistic Concurrency Control）
-  - MVCC（Multi-Version Concurrency Control）
-  - Snapshot Isolation
-
-## 三、基于锁的并发控制（Lock-Based Protocols）
-
-- 锁的定义
-  - lock 是控制并发访问数据项的机制
-
-- 锁模式
-  - Shared Lock（S）
-    - 只允许读
-  - Exclusive Lock（X）
-    - 允许读和写
-
-- 锁兼容性
-  - S / S：兼容
-  - S / X：不兼容
-  - X / S：不兼容
-  - X / X：不兼容
-
-- Concurrency-Control Manager
-  - 负责受理加锁请求
-  - 判断是否授予或阻塞
-
-- Automatic Lock Acquisition
-  - 用户通常只发 `read(D)` / `write(D)`
-  - DBMS 内部自动申请 S/X 锁
-  - 写可能触发 upgrade（S -> X）
-  - commit / abort 时统一释放锁
-
-- Lock Table
-  - 记录 granted locks
-  - 记录 pending requests
-  - 常由 Lock Manager 管理
-
-## 四、Two-Phase Locking（2PL）
-
-- 2PL 的两个阶段
-  - Growing Phase
-    - 可以获取锁
-    - 不可以释放锁
-  - Shrinking Phase
-    - 可以释放锁
-    - 不可以获取新锁
-
-- 2PL 保证什么
-  - conflict serializability
-
-- Lock Point
-  - 事务获取到最后一把锁的位置
-  - 事务可按 lock point 顺序串行化
-
-- 基本 2PL 的问题
-  - 不能避免 cascading aborts
-  - 不能避免 deadlocks
-
-- 2PL 扩展
-  - Strict 2PL
-    - 持有所有 X locks 到 commit / abort
-    - 保证 recoverability
-    - 避免 cascading rollbacks
-  - Rigorous / Strong Strict 2PL
-    - 持有所有锁到 commit / abort
-    - 可按 commit 顺序串行化
-    - 现实数据库里很常见
-
-- Lock Conversions
-  - Growing Phase
-    - S -> X：upgrade
-  - Shrinking Phase
-    - X -> S：downgrade
-
-## 五、死锁与饥饿
-
-- Deadlock
-  - 事务互相等待对方释放锁
-  - 谁也无法推进
-  - 必须至少回滚一个事务
-
-- Starvation
-  - 某事务长期拿不到资源
-  - 一直被推迟或重复回滚
-
-- 死锁处理两大方向
-  - Deadlock Detection
-  - Deadlock Prevention
-
-### 1. Deadlock Detection
-
-- waits-for graph
-  - 节点：事务
-  - 边：Ti 等待 Tj 的锁
-
-- 判据
-  - 图中有 cycle -> 死锁
-
-- 特点
-  - 不会过早回滚
-  - 但要周期性检测
-
-### 2. Deadlock Prevention
-
-- wait-die
-  - 老事务可以等年轻事务
-  - 年轻事务不能等老事务，只能回滚
-
-- wound-wait
-  - 老事务不等年轻事务，直接让年轻事务回滚
-  - 年轻事务可以等老事务
-
-- Timeout-based scheme
-  - 等待超时就回滚
-  - 简单但会误杀
-
-### 3. Deadlock Recovery
-
-- 选择 victim
-  - 回滚成本最小者优先
-
-- 回滚策略
-  - Total rollback
-  - Partial rollback（savepoint）
-
-- 避免 starvation
-  - 不总是选同一个事务当 victim
-  - 例如最老事务不当 victim
-
-## 六、图协议与多粒度锁
-
-### 1. Graph-Based Protocols
-
-- 思路
-  - 对数据集施加 partial ordering
-  - 按图结构访问和加锁
-
-- 代表
-  - tree protocol
-
-- 优点
-  - conflict serializable
-  - deadlock-free
-
-- 缺点
-  - 不保证 recoverability
-  - 不保证 cascadeless
-  - 可能必须锁住未访问对象
-
-### 2. Multiple Granularity
-
-- 为什么需要
-  - 锁可以加在 database / area / file / record 等不同层级
-  - 粒度越细，并发越高，但开销越大
-  - 粒度越粗，开销越低，但并发越差
-
-- 粒度 tradeoff
-  - Fine granularity
-    - 高并发
-    - 高锁开销
-  - Coarse granularity
-    - 低开销
-    - 低并发
-
-### 3. Intention Locks
-
-- IS（Intention Shared）
-  - 表示低层将加 shared locks
-
-- IX（Intention Exclusive）
-  - 表示低层将加 exclusive/shared locks
-
-- SIX（Shared + Intention Exclusive）
-  - 当前层共享读
-  - 子层还会做排他更新
-
-## 七、插入/删除、谓词读取与幻读
-
-- Insert/Delete Rules
-  - 删除前必须有 X lock
-  - 插入的新 tuple 自动获得 X lock
-  - 插入的数据在提交前对别人不可见
-
-- Phantom 问题
-  - 锁住已有行，不足以保护“满足某谓词的结果集”
-  - 因为别的事务可以插入新行
-
-- Predicate Reads
-  - 读的是“满足条件的集合”
-  - 不是固定对象集
-
-- Handling Phantoms
-  - 需要锁住“关于哪些元组存在”的信息
-  - 但这种方法并发性很差
-
-- Predicate Locking
-  - 锁逻辑谓词，而不只是具体记录
-  - 理论上更强
-  - 实现复杂，开销大
-
-## 八、索引并发控制
-
-### 1. Index Locking
-
-- 视作 predicate locking 的高效特例
-- 基本规则
-  - 每个关系至少有一个索引
-  - 查找要锁住经过的 index leaf nodes（S 模式）
-  - 插入/删除/更新要对受影响叶子页加 X 锁
-  - 仍要遵守 2PL
-
-### 2. Next-Key Locking
-
-- 不只锁满足谓词的键
-  - 还锁“下一个键”
-
-- 作用
-  - 更准确地保护范围
-  - 防止 phantom
-
-- 对插入场景尤其重要
-
-### 3. 为什么索引并发控制特殊
-
-- 索引访问频率很高
-- 如果对索引节点也严格做事务级 2PL
-  - 并发度会很低
-
-- 关键认识
-  - 访问内部节点时，精确读取哪个值不一定重要
-  - 只要最终到达正确叶子页、索引结构不坏即可
-
-## 九、Locks vs. Latches
-
-- Locks
-  - 保护逻辑内容
-  - 面向事务之间的冲突
-  - 持有时间长（事务级）
-  - 需要支持回滚
-
-- Latches
-  - 保护数据结构临界区
-  - 面向线程之间的内部同步
-  - 持有时间短（操作级）
-  - 不需要支持回滚
-
-- 直觉区分
-  - lock：事务语义正确性
-  - latch：内存结构不被并发线程破坏
-
-## 十、Crabbing / Latch Coupling
-
-### 1. 基本思想
-
-- 从 root 往下走
-- 先拿 child latch
-- 再放 parent latch
-
-### 2. Safe Node（安全节点）
-
-- 插入时
-  - 节点不满，不会 split
-- 删除时
-  - 节点超过半满，不会 merge / coalesce
-
-如果 child safe，就可提前释放祖先 latch。
-
-### 3. Search
-
-- 沿路拿 R latch
-- 拿到子节点后释放父节点
-
-### 4. Insert / Delete
-
-- 沿路按需要拿 W latch
-- 若 child safe，则释放祖先 latch
-
-### 5. Better Latch Crabbing
-
-- 乐观地假设目标 leaf safe
-- 先沿路拿 R latch
-- 到叶子后再检查
-- 若发现不安全，再退回保守策略
-
-- 别名
-  - optimistic lock coupling
-
-## 十一、Timestamp Ordering（TSO）
-
-- 核心思想
-  - 不显式加锁
-  - 用时间戳规定事务的串行顺序
-
-- 时间戳分配
-  - 每个事务开始时获得唯一 TS(Ti)
-  - 新事务时间戳严格更大
-  - 可来自逻辑计数器或（wall-clock, logical counter）
-
-- 原则
-  - timestamp order = serializability order
-
-### 1. Basic TSO
-
-- 每个数据项 Q 维护
-  - W-timestamp(Q)
-  - R-timestamp(Q)
-
-- Read rule
-  - 若 TS(Ti) < W-TS(Q)，拒绝读并回滚
-  - 否则读，并更新 R-TS(Q)
-
-- Write rule
-  - 若 TS(Ti) < R-TS(Q)，拒绝写并回滚
-  - 若 TS(Ti) < W-TS(Q)，拒绝写并回滚
-  - 否则允许写，更新 W-TS(Q)
-
-### 2. TSO 的性质
-
-- 优点
-  - serializable
-  - deadlock-free
-
-- 缺点
-  - not recoverable
-  - not cascadeless
-  - 长事务容易 starvation
-  - 时间戳维护有额外开销
-
-### 3. Thomas’ Write Rule
-
-- 如果：
-  - TS(Ti) < W-TS(X)
-
-- 不一定 abort
-- 可以直接忽略这个“过时写”
-- 让事务继续执行
-
-- 作用
-  - 降低不必要回滚
-
-## 十二、Optimistic Concurrency Control（OCC）
-
-- 核心假设
-  - 大多数事务不会冲突
-
-- 基本思想
-  - 每个事务先在 private workspace 中运行
-  - 提交时再验证是否冲突
-
-- 又叫
-  - Validation-Based Protocol
-
-### 1. 三阶段
-
-- Read Phase
-  - 记录 read set / write set
-  - 写只写私有区
-
-- Validation Phase
-  - 提交时检查是否与其他事务冲突
-
-- Write Phase
-  - 验证成功：写回全局数据库
-  - 失败：abort + restart
-
-### 2. 验证时间戳
-
-- StartTS(Ti)
-- ValidationTS(Ti)
-- FinishTS(Ti)
-
-- 串行化顺序
-  - TS(Ti) = ValidationTS(Ti)
-
-### 3. 验证条件直觉
-
-- 若别的事务在你开始前就完成
-  - 没问题
-
-- 若与你重叠执行
-  - 别人的 WriteSet 不能与你的 ReadSet 冲突
-
-否则验证失败。
-
-## 十三、MVCC（Multi-Version Concurrency Control）
-
-- 基本思想
-  - 不覆盖旧值
-  - 写成功产生新版本
-  - 读读历史版本
-
-- 最大收益
-  - reads never have to wait
-
-### 1. Multi-version Timestamp Ordering
-
-- 每个数据项有版本序列
-  - Q1, Q2, ..., Qm
-
-- 每个版本包含
-  - Content
-  - W-timestamp
-  - R-timestamp
-
-- 读
-  - 选择满足 W-TS <= TS(Ti) 的最新版本
-
-- 写
-  - 可能覆盖当前版本
-  - 也可能创建新版本
-
-- 性质
-  - Reads always succeed
-  - 保证 serializability
-
-### 2. Multi-version Two-Phase Locking
-
-- Update transactions
-  - 用 SS2PL
-  - 创建新版本
-  - 提交时统一赋时间戳
-
-- Read-only transactions
-  - 开始即拿时间戳
-  - 不获取锁
-  - 按 MV 时间戳规则读版本
-
-### 3. MVCC 实现问题
-
-- 版本会带来额外存储开销
-- 需要 garbage collection
-- 主键/外键检查更复杂
-- 多版本索引更复杂
-
-## 十四、Snapshot Isolation（SI）
-
-- 核心规则
-  - 事务开始时拿 committed data snapshot
-  - 一直从自己的 snapshot 读
-  - 并发事务的更新对它不可见
-  - 自己的更新对自己可见
-  - first-committer-wins
-
-### 1. SI 的优点
-
-- 读永不阻塞
-- 读也不阻塞别人
-- 性能接近 Read Committed
-- 避免
-  - dirty read
-  - lost update
-  - non-repeatable read
-
-### 2. SI 的问题
-
-- 不保证真正 serializable
-- 可能发生
-  - write skew
-  - read-only inconsistency
-  - 约束检查异常
-
-### 3. SI 在真实系统中的实现
-
-- Oracle
-- PostgreSQL
-- SQL Server
-- IBM DB2
-
-- 注意点
-  - Oracle 使用 first updater wins
-  - 某些系统的 “serializable” 实际更接近 SI
-
-### 4. Working Around SI Anomalies
-
-- `select ... for update`
-  - 把检查逻辑变成带锁读取
-  - 可缓解某些写偏斜
-
-- 局限
-  - 不能彻底解决 phantom / predicate read 问题
-
-## 十五、Lecture 11 最值得记住的比较关系
-
-- Locking vs Timestamp
-  - Locking：等时阻塞
-  - Timestamp：不锁但可能频繁回滚
-
-- Basic 2PL vs Strict / Rigorous 2PL
-  - Basic：只保串行化
-  - Strict：再保 recoverability、避免 cascading aborts
-  - Rigorous：更强，直到提交才放所有锁
-
-- Deadlock Detection vs Prevention
-  - Detection：先允许等待，再找环
-  - Prevention：提前 kill 一方，避免成环
-
-- Locks vs Latches
-  - Locks：逻辑正确性
-  - Latches：内部结构安全
-
-- TSO vs OCC
-  - TSO：时间戳直接管顺序
-  - OCC：先假设不冲突，提交时验证
-
-- MVCC / SI vs Locking
-  - MVCC/SI：读性能更好
-  - 但实现复杂，且 SI 不等于 serializable
-
-## 十六、考试复习抓手
-
-- 主线 1：锁协议
-  - S/X locks
-  - compatibility
-  - 2PL
-  - strict 2PL
-  - rigorous 2PL
-
-- 主线 2：死锁
-  - deadlock
-  - starvation
-  - waits-for graph
-  - wait-die / wound-wait / timeout
-  - victim / rollback
-
-- 主线 3：范围与索引并发
-  - predicate reads
-  - phantom
-  - predicate locking
-  - index locking
-  - next-key locking
-
-- 主线 4：索引结构内部并发
-  - locks vs latches
-  - latch crabbing
-  - safe node
-  - optimistic lock coupling
-
-- 主线 5：非锁类协议
-  - TSO
-  - Thomas’ write rule
-  - OCC
-  - MVCC
-  - SI
-
-## 十七、一句话总括
-
-- 并发控制并不是单纯“防冲突”
-  - 而是在
-    - 正确性
-    - 回滚代价
-    - 等待时间
-    - 并发度
-    - 实现复杂度
-  之间做平衡
-
-- 最终目标是：
-  - **让事务在并发环境下仍然“看起来像被正确串行化执行”，同时尽量保住系统性能。**
+    - 用等待换正确性
+  - TSO / OCC
+    - 用回滚换等待
+  - MVCC / SI
+    - 用版本和空间换读性能
+
+- 因此真正的考试和工程理解重点是：
+  - 为什么会死锁
+  - 为什么会幻读
+  - 为什么 SI 仍可能不串行化
+  - 为什么工业界最终常是“多种机制混合使用”
