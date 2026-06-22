@@ -65,4 +65,5 @@ nav:
       - Lecture 10 · Transactions: notes/lecture10-transactions.md
       - Lecture 11 · Concurrency Control: notes/lecture11-concurrency-control.md
       - Lecture 11 · 思维导图: notes/lecture11-mindmap.md
+      - Lecture 12 · Recovery: notes/lecture12-recovery.md
   - 新增笔记模板: notes/_template.md
