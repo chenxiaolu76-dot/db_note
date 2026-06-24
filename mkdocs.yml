@@ -60,8 +60,6 @@ extra_javascript:
 nav:
   - 首页: index.md
   - 课程笔记:
-      - Lecture 0 · Course Logistics: notes/lecture0-course-logistics.md
-      - Lecture 0 · 思维导图: notes/lecture0-mindmap.md
       - Lecture 1 · Introduction & Relational Model: notes/lecture1-introduction-relational-model.md
       - Lecture 1 · 思维导图: notes/lecture1-mindmap.md
       - Lecture 2 · SQL(1): notes/lecture2-sql1.md
