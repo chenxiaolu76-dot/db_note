@@ -1,5 +1,11 @@
 # Lecture 9 Query Optimization
 
+## Final Review 重点
+
+- <span class="key-point">等价变换规则：selection pushdown、projection pushdown、join 交换律与结合律。</span>
+- <span class="key-point">启发式优化思想：尽早做 selection 和 projection。</span>
+- <span class="key-point">代价估计依赖统计信息，核心是比较不同执行计划成本。</span>
+
 ## 1 Overview
 
 - **查询优化（Query Optimization）**：对于同一条 SQL，数据库通常有很多种逻辑等价但执行代价不同的求值方式（alternative ways of evaluating a query）。

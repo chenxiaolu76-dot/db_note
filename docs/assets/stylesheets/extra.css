@@ -61,3 +61,17 @@ body {
   border-radius: 14px;
   background: #fff;
 }
+
+.md-typeset .mermaid {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  overflow-x: auto;
+}
+
+.md-typeset .key-point {
+  color: #c62828;
+  font-weight: 700;
+}

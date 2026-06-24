@@ -1,5 +1,12 @@
 # Lecture 11 Concurrency Control
 
+## Final Review 重点
+
+- <span class="key-point">2PL：growing phase → lock point → shrinking phase，保证 conflict serializability。</span>
+- <span class="key-point">Strict 2PL：X locks 持有到 commit，避免 cascading rollback。</span>
+- <span class="key-point">Deadlock detection：waits-for graph cycle；prevention：wait-die / wound-wait。</span>
+- <span class="key-point">Multiple granularity locking：`IS / IX / S / SIX / X` 兼容关系要掌握。</span>
+
 ## 1 Overview
 
 这一讲真正讨论的是：数据库如何在**多事务并发执行**时，仍然让每个事务“看起来像独占系统运行”。

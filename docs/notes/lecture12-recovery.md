@@ -1,5 +1,12 @@
 # Lecture 12 Recovery
 
+## Final Review 重点
+
+- <span class="key-point">WAL：对应日志必须先到 stable storage，数据页才能落盘。</span>
+- <span class="key-point">会写并识别基本日志类型：`<start> <update> <commit> <abort> <checkpoint>`。</span>
+- <span class="key-point">恢复主线：从 checkpoint 往后 redo committed，从崩溃点向后 undo uncommitted。</span>
+- <span class="key-point">Checkpoint 的作用是限制恢复时需要扫描的日志范围。</span>
+
 ## 1 Overview
 
 这一讲讨论的是：数据库在发生事务失败、系统崩溃后，怎样保证事务的原子性和持久性。

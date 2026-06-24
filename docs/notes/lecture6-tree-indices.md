@@ -1,5 +1,12 @@
 # 数据库课程第 6 讲 Tree Indices 详细笔记
 
+## Final Review 重点
+
+- <span class="key-point">B+-Tree：所有搜索键最终都落在叶子结点，内部结点只做导航。</span>
+- <span class="key-point">Dense index / sparse index、clustering index / secondary index 要能区分。</span>
+- <span class="key-point">B+-Tree 的 Search / Insert / Delete 是综合题高频考点。</span>
+- <span class="key-point">一个关系最多只有一个 clustering index。</span>
+
 ## 文档说明
 - 对应课件：`Database2026 - lecture 6 - Tree Indices.pptx`
 - 主题：数据库中的树索引（重点是 B+ 树）

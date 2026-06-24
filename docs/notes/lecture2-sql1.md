@@ -1,5 +1,12 @@
 # 数据库课程第 2 讲 SQL(1) 详细知识讲解
 
+## Final Review 重点
+
+- <span class="key-point">掌握 `SELECT-FROM-WHERE-GROUP BY-HAVING-ORDER BY` 的执行主线。</span>
+- <span class="key-point">聚合函数 `COUNT / SUM / AVG / MIN / MAX`，尤其区分 `COUNT(*)` 和 `COUNT(col)`。</span>
+- <span class="key-point">集合操作 `UNION / INTERSECT / EXCEPT` 默认会去重。</span>
+- <span class="key-point">这是 SQL 基础部分，后续连接、视图、约束、触发器都建立在这一讲之上。</span>
+
 ## 文档说明
 - 对应课件：`Database2026 - lecture 2 - SQL(1).pptx`
 - 学习对象：零基础到入门阶段

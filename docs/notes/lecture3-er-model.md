@@ -1,5 +1,12 @@
 # 数据库课程第 3 讲 ER Model 笔记
 
+## Final Review 重点
+
+- <span class="key-point">掌握 1:1 / 1:N / M:N 基数约束，以及 total / partial participation。</span>
+- <span class="key-point">Weak entity set 依赖 owner entity 和 partial key。</span>
+- <span class="key-point">E-R 到关系模式映射时，`M:N` 要单独建关系，`1:N` 外键加在 many side。</span>
+- <span class="key-point">Specialization / Generalization 要会区分 disjoint / overlapping 与 total / partial。</span>
+
 ## 文档说明
 - 对应课件：`Database2026 - lecture 3 - ER Model.pptx`
 - 学习目标：理解 E-R 建模核心概念，并能把 E-R 图转换为关系模式

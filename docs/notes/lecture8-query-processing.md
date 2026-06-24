@@ -1,5 +1,11 @@
 # 数据库课程第 8 讲 Query Processing 详细笔记
 
+## Final Review 重点
+
+- <span class="key-point">记住 Query Processing 三阶段：Parsing & Translation → Optimization → Evaluation。</span>
+- <span class="key-point">选择、排序、连接算法的 I/O 代价分析是本讲核心。</span>
+- <span class="key-point">不同 join algorithm 的适用场景和代价比较是综合题重点。</span>
+
 ## 文档说明
 
 - 对应课件：`Database2026 - lecture 8 - Query Processing.pptx`

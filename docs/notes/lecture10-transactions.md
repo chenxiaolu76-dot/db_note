@@ -1,5 +1,12 @@
 # Lecture 10 Transactions
 
+## Final Review 重点
+
+- <span class="key-point">ACID 必须会完整写出并解释。</span>
+- <span class="key-point">precedence graph 无环 <=> conflict serializable。</span>
+- <span class="key-point">要会区分 dirty read、non-repeatable read、phantom read。</span>
+- <span class="key-point">隔离级别顺序：Read Uncommitted → Read Committed → Repeatable Read → Serializable。</span>
+
 ## 1 Transaction Concept
 
 - **事务（transaction）**：程序执行的一个基本单位（unit of program execution），它会访问并可能更新多个数据项（data items）。

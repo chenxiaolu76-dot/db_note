@@ -1,5 +1,12 @@
 # 数据库存储 Lecture5 模块四~七 逐点详解笔记
 
+## Final Review 重点
+
+- <span class="key-point">磁盘访问时间 = seek time + rotational latency + transfer time。</span>
+- <span class="key-point">顺序访问显著快于随机访问，这与机械磁盘物理特性直接相关。</span>
+- <span class="key-point">RAID 重点掌握 0 / 1 / 5 / 6 的并行与容错差异。</span>
+- <span class="key-point">Fixed-length / variable-length records、free-space management、buffer manager 是本讲重点。</span>
+
 ## 整体逻辑概述
 从模块四开始，内容正式从「存储硬件通用原理」进入**数据库专属的物理存储实现与性能优化**。
 所有设计围绕核心目标：**适配磁盘块访问特性、最小化磁盘 I/O、高效管理数据增删改查、保障并发一致性**。
