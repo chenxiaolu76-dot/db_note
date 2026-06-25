@@ -403,7 +403,95 @@ SQL 更偏向：
 | cartesian product | 两关系所有元组组合 |
 | rename | 给中间结果命名，方便复用 |
 
-### 17.4 Natural Join
+### 17.4 每个关系代数运算符的示例
+
+先统一约定两个关系：
+
+- `Student(sid, name, dept, age)`
+- `CSStudent(sid, name, dept, age)`
+
+其中可把它们想成下面的数据：
+
+| sid | name | dept | age |
+| --- | --- | --- | --- |
+| 1001 | Alice | CS | 20 |
+| 1002 | Bob | Math | 21 |
+| 1003 | Carol | CS | 22 |
+
+`CSStudent` 只包含 CS 学生，因此可看成：
+
+| sid | name | dept | age |
+| --- | --- | --- | --- |
+| 1001 | Alice | CS | 20 |
+| 1003 | Carol | CS | 22 |
+
+1. Selection（选择）
+
+从 `Student` 里筛出计算机系学生：
+
+\[
+\sigma_{\mathrm{dept} = \text{CS}}(\mathrm{Student})
+\]
+
+结果是保留 `dept = CS` 的元组，也就是 Alice 和 Carol。
+
+2. Projection（投影）
+
+只保留学生姓名：
+
+\[
+\pi_{\mathrm{name}}(\mathrm{Student})
+\]
+
+结果只剩一列 `name`，体现“列裁剪”。
+
+3. Union（并）
+
+如果还有一个同结构关系 `MathStudent(sid, name, dept, age)`，则：
+
+\[
+\mathrm{CSStudent} \cup \mathrm{MathStudent}
+\]
+
+表示把两个并相容关系中的元组合并起来，重复元组只保留一份。
+
+4. Difference（差）
+
+求“所有学生中，不属于 CSStudent 的人”：
+
+\[
+\mathrm{Student} - \mathrm{CSStudent}
+\]
+
+结果是 Bob，表示出现在前一个关系、但不出现在后一个关系中的元组。
+
+5. Cartesian Product（笛卡尔积）
+
+如果有关系 `Course(cid, title)`，则：
+
+\[
+\mathrm{Student} \times \mathrm{Course}
+\]
+
+表示每个学生都和每门课做一次配对，总结果数等于两个关系元组数的乘积。
+
+6. Rename（重命名）
+
+把 `Student` 改名成 `S`，方便写更复杂表达式：
+
+\[
+\rho_{S}(\mathrm{Student})
+\]
+
+如果要同时改属性名，也可以写成：
+
+\[
+\rho_{S(sid, sname, dept, age)}(\mathrm{Student})
+\]
+
+它常用于自连接或给中间结果命名。
+
+### 17.5 Natural Join
 
 课件强调：
 
@@ -412,7 +500,7 @@ SQL 更偏向：
 
 这也是 final review 明确点名的操作。
 
-### 17.5 关于表达式等价
+### 17.6 关于表达式等价
 
 同一个查询可能有多种 relational algebra 写法，只要：
 
@@ -435,3 +523,21 @@ SQL 更偏向：
 \boxed{\text{Lecture 1 的本质，是把“为什么需要数据库”和“数据库如何用关系模型表达”两件事讲清楚}}
 \]
 
+---
+
+## 19 教材补充
+
+这一讲如果题目更贴近教材，而不是只贴近 PPT，最容易补出的点有：
+
+| 教材小节 | 可能补充出的知识点 |
+| --- | --- |
+| 1.4 Database Languages | DDL 与 DML 的区别；过程化与非过程化语言 |
+| 1.6 Database Engine | `storage manager`、`query processor`、`transaction manager` 的职责边界 |
+| 1.7 Database and Application Architecture | two-tier / three-tier 架构差异 |
+| 1.8 Database Users and Administrators | DBA、开发者、终端用户的角色分工 |
+| 1.9 History of Database Systems | 关系模型为什么成为主流 |
+
+复习建议：
+
+- 大题主线仍然是三层抽象与关系模型
+- 但这些教材补充点很适合出概念型选择题
